@@ -1,0 +1,5 @@
+When you try to cut the phone off they will ask for a password .
+Case sensitive
+L310MC570G
+
+and if they ask for an administrative code for somereason it is 103729
