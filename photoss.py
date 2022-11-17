@@ -30,7 +30,13 @@ cursor = conn.cursor()
 #The original set of phones, new phones could be added in the future.
 #This datastructure is immediately loaded with an ip corresponding to the mac adddress seen in field 2.
 phone_ip_addresses = {
-                         ("8", "48:60:5F:2F:4F:1B", "unknown"):"192.168.1.113:5555"
+                         ("0", "48:60:5F:2F:40:10", "unknown"):"192.168.1.102:5555",
+                         ("1", "48:60:5F:2E:F5:BF", "unknown"):"192.168.1.123:5555",
+                         ("2", "48:60:5F:2F:40:10", "LMG710V86da3a0f"):"192.168.1.126:5555",
+                         ("3", "48:60:5F:2F:5B:44", "unknown"):"192.168.1.104:5555",
+                         ("4", "48:60:5F:2F:5B:44", "unknown"):"192.168.1.117:5555",
+                         ("6", "48:60:5F:2F:5B:4D", "unknown"):"192.168.1.114:5555",
+                         ("8", "48:60:5F:2F:5B:4D", "unknown"):"192.168.1.118:5555"
                      }
 
 commands = {
@@ -257,7 +263,8 @@ while(True):
             elif(input == "8"):
                 sendToAllPhones(commands["delete"], 5)
             elif(input == "9"):
-                createTable()
+                while(True):
+                    sendToAllPhones(commands["brightup"], 0.25)
             elif(input == "0"):
                 # We can also close the connection if we are done with it.
                 # Just be sure any changes have been committed or they will be lost.
