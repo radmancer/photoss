@@ -6,6 +6,8 @@ from time import sleep
 import sqlite3
 import re
 
+adbLocation = "/usr/bin/adb"
+photoDestination = "/home/scott/Desktop"
 conn = sqlite3.connect('photoss.db')
 cursor = conn.cursor()
 
@@ -51,7 +53,7 @@ commands = {
                "enter" : "shell input keyevent KEYCODE_ENTER",
                "brightdown" : "shell input keyevent 220",
                "brightup" : "shell input keyevent 221",
-               "pull" : "pull /sdcard/DCIM/Camera /Users/scott/Documents/",
+               "pull" : "pull /sdcard/DCIM/Camera ./",
                "delete": "shell rm /sdcard/DCIM/Camera/*",
                "getmac" : "shell ip address show wlan0"
            }
@@ -89,7 +91,7 @@ def clearAll():
     conn.commit()
 
 def adb(command):
-    subprocess.call("./adb " + command, shell=True)
+    subprocess.call(adbLocation + " " + command, shell=True)
             
 def updateDatabase(mac_address, ip_address):
     cursor.execute("UPDATE devices SET ip_address = '" + ip_address + "' WHERE mac_address = '" + mac_address + "'")
@@ -166,7 +168,7 @@ def sendToAllPhones(command, delay):
     i=0
     for key, value in phone_ip_addresses.items():
         phone_ip_address = phone_ip_addresses[(key[0], key[1], key[2])]
-        commands.append("./adb -s " + phone_ip_address + " " + command)
+        commands.append(adbLocation + " -s " + phone_ip_address + " " + command)
         i = i + 1
     procs = [ Popen(['/bin/bash', '-c', i]) for i in commands ]
     for p in procs:
@@ -181,7 +183,7 @@ def showPhoneInfo():
     commands = []
     for key, value in phone_ip_addresses.items():
         phone_ip_address = phone_ip_addresses[(key[0], key[1], key[2])]
-        commands.append("./adb -s " + phone_ip_address + ' shell input text "IP:' + phone_ip_address + 'MAC:' + key[1] + '"')
+        commands.append(adbLocation + " -s " + phone_ip_address + ' shell input text "IP:' + phone_ip_address + 'MAC:' + key[1] + '"')
     procs = [ Popen(['/bin/bash', '-c', i]) for i in commands ]
     for p in procs:
         p.wait()
@@ -190,7 +192,7 @@ def sendBashCommandToAllPhones():
     commands = []
     for key, value in phone_ip_addresses.items():
         phone_ip_address = phone_ip_addresses[(key[0], key[1], key[2])]
-        commands.append("./adb -s " + phone_ip_address + " shell mv /sdcard/DCIM/Camera/* /sdcard/DCIM/Camera/" + phone_ip_address + "_" + key[1] + ".jpg")
+        commands.append(adbLocation + " -s " + phone_ip_address + " shell mv /sdcard/DCIM/Camera/* /sdcard/DCIM/Camera/" + phone_ip_address + "_" + key[1] + ".jpg")
     procs = [ Popen(['/bin/bash', '-c', i]) for i in commands ]
     for p in procs:
         p.wait()
@@ -211,11 +213,11 @@ network_ip = "192.168.1.1"#linksys
 while(True):
     if(len(sys.argv) > 1 and sys.argv[1] == "-c"):
         while(True):
-            input = raw_input("What do you wish to do, sire?\n1 disconnect all devices.\n2 reconnect a device.\n3 reconnect all devices\n4 power conservation mode. (turn screens down)\n5 update the data base with latest ip addresses.\n6 show phone info. \n7 select all from db.\n8 delete photos on all phones.\n9 create table\n0 exit program\n")
-            if(input == "1"):
+            prompt = input("What do you wish to do, sire?\n1 disconnect all devices.\n2 reconnect a device.\n3 reconnect all devices\n4 power conservation mode. (turn screens down)\n5 update the data base with latest ip addresses.\n6 show phone info. \n7 select all from db.\n8 delete photos on all phones.\n9 poll phones (keep them awake)\n0 exit program\n")
+            if(prompt == "1"):
                 adb(commands["disconnect"])
-            elif(input == "2"):
-                phonemoniker = raw_input("This is where you plug in the desired phone my lord.\nIN ORDER TO CONTINUE!!!!\nType any one of its common names like '12' or 'LG0000929669287' or 'LMG710V6f6e8737' ")
+            elif(prompt == "2"):
+                phonemoniker = input("This is where you plug in the desired phone my lord.\nIN ORDER TO CONTINUE!!!!\nType any one of its common names like '12' or 'LG0000929669287' or 'LMG710V6f6e8737' ")
                 phone_ip_address = ""
                 for key, value in phone_ip_addresses.items():
                     if(phonemoniker == key[0]):
@@ -226,28 +228,28 @@ while(True):
                         phone_ip_address = phone_ip_addresses[(key[0], key[1], key[2])]
                 print(phone_ip_address)
                 adb(commands["connect"] + phone_ip_address)
-                if(raw_input("Connection successful? (y/n) ") == "n"):
+                if(input("Connection successful? (y/n) ") == "n"):
                     adb(commands["disconnect"])
                     sleep(1)
                     adb(commands["usbmode"])
                     sleep(1)
-                    raw_input("This is silly, but you must replug your phone in to continue. Press The Any Key to continue..")
+                    input("This is silly, but you must replug your phone in to continue. Press The Any Key to continue..")
                     sleep(1)
                     adb(commands["tcpipreset"])
                     sleep(5)
                     adb(commands["connect"] + phone_ip_address)
-            elif(input == "3"):
+            elif(prompt == "3"):
                 reconnectAllPhones()
                 sendToAllPhones(commands["home"], 3)
                 for i in range(10):
                     sendToAllPhones(commands["brightup"], 0.25)
                 sendToAllPhones(commands["home"], 3)
-            elif(input == "4"):
+            elif(prompt == "4"):
                 for i in range(10):
                     sendToAllPhones(commands["brightdown"], 0.25)
                 for i in range(10):
                     sendToAllPhones(commands["home"], 0)
-            elif(input == "5"):
+            elif(prompt == "5"):
                 macAndIps = getAllMacsAndIps(network_ip)
                 macs = macAndIps[0]
                 ips = macAndIps[1]
@@ -256,16 +258,16 @@ while(True):
                 print("Updated the database my lord.\n")
                 refreshDictionary()
                 print("Updated local dictionary, good reading material...\n")
-            elif(input == "6"):
+            elif(prompt == "6"):
                 showPhoneInfo()
-            elif(input == "7"):
+            elif(prompt == "7"):
                 selectAll()
-            elif(input == "8"):
+            elif(prompt == "8"):
                 sendToAllPhones(commands["delete"], 5)
-            elif(input == "9"):
+            elif(prompt == "9"):
                 while(True):
                     sendToAllPhones(commands["brightup"], 0.25)
-            elif(input == "0"):
+            elif(prompt == "0"):
                 # We can also close the connection if we are done with it.
                 # Just be sure any changes have been committed or they will be lost.
                 conn.close()
@@ -275,11 +277,11 @@ while(True):
                 # Just be sure any changes have been committed or they will be lost.
                 conn.close()
                 exit(1)
-
-            if(raw_input("Continue connecting devices? (y/n) ") == "n"):
+            input2 = input("Continue connecting devices? (y/n)")
+            if(input2 == "n"):
                 break
 
-    elif(raw_input("Take a photo now? (y/n)") == "y"):
+    elif(input("Take a photo now? (y/n)") == "y"):
         #macAndIps = getAllMacsAndIps(network_ip)
         #macs = macAndIps[0]
         #ips = macAndIps[1]
