@@ -40,7 +40,7 @@ phone_ip_addresses = {
 
 commands = {
                "home": "shell input keyevent KEYCODE_HOME",
-               "capture": "shell am start -a android.media.action.STILL_IMAGE_CAMERA",
+               "capture": "shell am start -a android.media.action.IMAGE_CAPTURE",
                "camera": "shell input keyevent KEYCODE_CAMERA",
                "disconnect": "disconnect",
                "usbmode": "usb",
@@ -55,7 +55,8 @@ commands = {
                "getmac" : "shell ip address show wlan0",
                "stayon" : "shell settings put global stay_on_while_plugged_in 3",
                "stayoff" : "shell settings put global stay_on_while_plugged_in 0",
-               "awaken" : "shell input keyevent KEYCODE_HOME"
+               "awaken" : "shell input keyevent KEYCODE_HOME",
+               "sleep" : "shell sleep 1"
            }
 
 def adb(command):
@@ -99,6 +100,40 @@ def sendAwakenCommandToAllPhones():
 def sendBrightnessCommandToAllPhones(command):
     for i in range(10):
         sendToAllPhones(command, 0.25)
+
+def sendToAllPhones(command, delay):
+    commands = []
+    i=0
+    for key, value in phone_ip_addresses.items():
+        phone_ip_address = phone_ip_addresses[(key[0], key[1], key[2])]
+        commands.append(ADB_LOCATION + " -s " + phone_ip_address + " " + command)
+        i = i + 1
+    procs = [ Popen(['/bin/bash', '-c', i]) for i in commands ]
+    for p in procs:
+        sleep(delay)
+        p.wait()
+
+def sendImageCaptureCommandToAllPhones():
+    commands = []
+    for key, value in phone_ip_addresses.items():
+        phone_ip_address = phone_ip_addresses[(key[0], key[1], key[2])]
+        #adb shell "am start -a android.media.action.IMAGE_CAPTURE" && \ sleep 1 && \ adb shell "input keyevent 27"
+        commands.append(ADB_LOCATION + " -s " + phone_ip_address + ' shell am start -a android.media.action.IMAGE_CAPTURE')
+    procs = [ Popen(['/bin/bash', '-c', i]) for i in commands ]
+    for p in procs:
+        p.wait()
+    sleep(5)
+
+def sendTakePhotoCommandToAllPhones():
+    commands = []
+    for key, value in phone_ip_addresses.items():
+        phone_ip_address = phone_ip_addresses[(key[0], key[1], key[2])]
+        #adb shell "am start -a android.media.action.IMAGE_CAPTURE" && \ sleep 1 && \ adb shell "input keyevent 27"
+        commands.append(ADB_LOCATION + " -s " + phone_ip_address + ' shell input keyevent 27')
+    procs = [ Popen(['/bin/bash', '-c', i]) for i in commands ]
+    for p in procs:
+        p.wait()
+    sleep(5)
 
 #Main
 while(True):
@@ -147,14 +182,19 @@ while(True):
                 exit(1)
 
     elif(raw_input("Take a photo now? (y/n)") == "y"):
-        sendToAllPhones(commands["delete"], 5)
-        sendToAllPhones(commands["home"], 5)
-        sendToAllPhones(commands["capture"], 5)
-        sendToAllPhones(commands["camera"], 5)
+        #sendBrightnessCommandToAllPhones(commands["brightup"])
+        sendToAllPhones(commands["delete"], 1)
+        sendToAllPhones(commands["home"], 1)
+        print("Say cheese!")
+        sleep(1)
+        #sendToAllPhones(commands["capture"], 1)
+        #sendToAllPhones(commands["sleep"], 1)
+        #sendToAllPhones(commands["camera"], 1)
+        sendImageCaptureCommandToAllPhones()
+        sendTakePhotoCommandToAllPhones()
         sendImageRenameCommandToAllPhones()
-        sendToAllPhones(commands["home"], 5)
+        sendToAllPhones(commands["home"], 1)
         sendToAllPhones(commands["pull"], 0)
-        sleep(5)
         sendBrightnessCommandToAllPhones(commands["brightdown"])
         sendAwakenCommandToAllPhones()
     else:
