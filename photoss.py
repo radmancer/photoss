@@ -4,8 +4,8 @@ import subprocess
 from subprocess import Popen
 from time import sleep
 
-PHOTO_DIRECTORY = "/Users/scott/Documents/" #"/home/scott/Desktop"
-ADB_LOCATION = "./adb" #"/usr/bin/adb"
+PHOTO_DIRECTORY = "/home/scott/Desktop"
+ADB_LOCATION = "/usr/bin/adb"
 
 #Array of phones connected to the Cox router.
 # phone_ip_addresses = {
@@ -139,12 +139,12 @@ def sendTakePhotoCommandToAllPhones():
 while(True):
     if(len(sys.argv) > 1 and sys.argv[1] == "-c"):
         while(True):
-            prompt = raw_input("\nWhat do you wish to do?\n1 disconnect all devices.\n2 reconnect a device.\n3 reconnect all devices.\n4 awaken all phones.\n5 power conservation mode.\n0 exit.\n")
+            prompt = input("\nWhat do you wish to do?\n1 disconnect all devices.\n2 reconnect a device.\n3 reconnect all devices.\n4 awaken all phones.\n5 power conservation mode.\n0 exit.\n")
             subprocess.call("clear", shell=True)
             if(prompt == "1"):
                 adb(commands["disconnect"])
             elif(prompt == "2"):
-                phonemoniker = raw_input("This is where you plug in the desired phone my lord.\nIN ORDER TO CONTINUE!!!!\nType any one of its common names like '12' or 'LG0000929669287' or 'LMG710V6f6e8737' ")
+                phonemoniker = input("This is where you plug in the desired phone my lord.\nIN ORDER TO CONTINUE!!!!\nType any one of its common names like '12' or 'LG0000929669287' or 'LMG710V6f6e8737' ")
                 phone_ip_address = ""
                 for key, value in phone_ip_addresses.items():
                     if(phonemoniker == key[0]):
@@ -155,12 +155,12 @@ while(True):
                         phone_ip_address = phone_ip_addresses[(key[0], key[1], key[2])]
                 print(phone_ip_address)
                 adb(commands["connect"] + phone_ip_address)
-                if(raw_input("Connection successful? (y/n) ") == "n"):
+                if(input("Connection successful? (y/n) ") == "n"):
                     adb(commands["disconnect"])
                     sleep(1)
                     adb(commands["usbmode"])
                     sleep(1)
-                    raw_input("You must have the desired phone attached via usb to continue. Press any key when ready.")
+                    input("You must have the desired phone attached via usb to continue. Press any key when ready.")
                     sleep(1)
                     adb(commands["tcpipreset"])
                     sleep(5)
@@ -181,7 +181,7 @@ while(True):
             else:
                 exit(1)
 
-    elif(raw_input("Take a photo now? (y/n)") == "y"):
+    elif(input("Take a photo now? (y/n)") == "y"):
         #sendBrightnessCommandToAllPhones(commands["brightup"])
         sendToAllPhones(commands["delete"], 1)
         sendToAllPhones(commands["home"], 1)
