@@ -4,6 +4,14 @@ import subprocess
 from subprocess import Popen
 from time import sleep
 
+#it is currently not known for why python 3 complains about the nmap library not existing if the program is run in picture taking mode.
+#WARNING: this if statement is a hack and a long-term solution needs to be researched.
+if(len(sys.argv) > 1 and sys.argv[1] == "-c"):
+    import nmap
+    nm = nmap.PortScanner() 
+    cidr2='192.168.1.1/24'
+
+
 PHOTO_DIRECTORY = "/home/scott/Desktop"
 ADB_LOCATION = "/usr/bin/adb"
 
@@ -35,8 +43,38 @@ phone_ip_addresses = {
                          ("7", "48:60:5F:2F:46:0E", "unknown"):"192.168.1.100:5555",
                          ("8", "48:60:5F:2F:4F:1B", "unknown"):"192.168.1.113:5555",
                          ("9", "48:60:5F:2F:2D:B0", "unknown"):"192.168.1.112:5555",
-                         ("10", "48:60:5F:2F:2B:5B", "unknown"):"192.168.1.127:5555"
+                         ("10", "48:60:5F:2F:2B:5B", "unknown"):"192.168.1.127:5555",
+                         ("11", "48:60:5F:2F:2B:5B", "unknown"):"192.168.1.115:5555",
+                         ("12", "48:60:5F:2F:2B:5B", "unknown"):"192.168.1.135:5555",
+                         ("13", "48:60:5F:2F:2B:5B", "unknown"):"192.168.1.118:5555",
+                         ("14", "48:60:5F:2F:2B:5B", "unknown"):"192.168.1.125:5555",
+                         ("15", "48:60:5F:2F:2B:5B", "unknown"):"192.168.1.101:5555",
+                         ("16", "48:60:5F:2F:2B:5B", "unknown"):"192.168.1.143:5555",
+                         ("17", "48:60:5F:2F:2B:5B", "unknown"):"192.168.1.120:5555",
+                         ("18", "48:60:5F:2F:2B:5B", "unknown"):"192.168.1.103:5555",
+                         ("19", "48:60:5F:2F:2B:5B", "unknown"):"192.168.1.116:5555",
+                         ("20", "48:60:5F:2F:2B:5B", "unknown"):"192.168.1.122:5555",
+                         ("21", "48:60:5F:2F:2B:5B", "unknown"):"192.168.1.142:5555",
+                         ("22", "48:60:5F:2F:2B:5B", "unknown"):"192.168.1.119:5555",
+                         ("23", "48:60:5F:2F:2B:5B", "unknown"):"192.168.1.138:5555"
                      }
+
+def checkNewPhoneAgainstDictionary():
+    temp_phone_ip_addresses = []
+    for key, value in phone_ip_addresses.items():
+        temp_phone_ip_addresses.append(phone_ip_addresses[(key[0], key[1], key[2])][:-5])
+    
+    a=nm.scan(hosts=cidr2, arguments='-sP') 
+
+    android_ip_addresses = []
+
+    for k,v in a['scan'].items(): 
+        if str(v['status']['state']) == 'up':
+            hostname = v['hostnames'][0]['name']
+            if hostname[:7] == "android":
+                android_ip_addresses.append(v['addresses']['ipv4'])
+            
+    print(set(android_ip_addresses) ^ set(temp_phone_ip_addresses))
 
 commands = {
                "home": "shell input keyevent KEYCODE_HOME",
@@ -56,7 +94,8 @@ commands = {
                "stayon" : "shell settings put global stay_on_while_plugged_in 3",
                "stayoff" : "shell settings put global stay_on_while_plugged_in 0",
                "awaken" : "shell input keyevent KEYCODE_HOME",
-               "sleep" : "shell sleep 1"
+               "sleep" : "shell sleep 1",
+               "kill" : "kill-server"
            }
 
 def adb(command):
@@ -92,7 +131,7 @@ def sendAwakenCommandToAllPhones():
     commands = []
     for key, value in phone_ip_addresses.items():
         phone_ip_address = phone_ip_addresses[(key[0], key[1], key[2])]
-        commands.append("while true; do " + ADB_LOCATION + " -s " + phone_ip_address + " shell input keyevent KEYCODE_HOME ; sleep 1 ; done")
+        commands.append("while true; do " + ADB_LOCATION + " -s " + phone_ip_address + " shell 'input keyevent KEYCODE_HOME && input keyevent 220 && input keyevent 221'; sleep 1; done")
     procs = [ Popen(['/bin/bash', '-c', i]) for i in commands ]
     for p in procs:
         p.wait()
@@ -139,10 +178,11 @@ def sendTakePhotoCommandToAllPhones():
 while(True):
     if(len(sys.argv) > 1 and sys.argv[1] == "-c"):
         while(True):
-            prompt = input("\nWhat do you wish to do?\n1 disconnect all devices.\n2 reconnect a device.\n3 reconnect all devices.\n4 awaken all phones.\n5 power conservation mode.\n0 exit.\n")
+            prompt = input("\nWhat do you wish to do?\n1 disconnect all devices.\n2 reconnect a device.\n3 reconnect all devices.\n4 awaken all phones.\n5 power conservation mode.\n6 check new phone ip against dictionary.\n0 exit.\n")
             subprocess.call("clear", shell=True)
             if(prompt == "1"):
                 adb(commands["disconnect"])
+                adb(commands["kill"])
             elif(prompt == "2"):
                 phonemoniker = input("This is where you plug in the desired phone my lord.\nIN ORDER TO CONTINUE!!!!\nType any one of its common names like '12' or 'LG0000929669287' or 'LMG710V6f6e8737' ")
                 phone_ip_address = ""
@@ -157,17 +197,18 @@ while(True):
                 adb(commands["connect"] + phone_ip_address)
                 if(input("Connection successful? (y/n) ") == "n"):
                     adb(commands["disconnect"])
+                    adb(commands["kill"])
+                    input("You must have the desired phone attached via usb to continue. Press any key when ready.")
                     sleep(1)
                     adb(commands["usbmode"])
-                    sleep(1)
-                    input("You must have the desired phone attached via usb to continue. Press any key when ready.")
                     sleep(1)
                     adb(commands["tcpipreset"])
                     sleep(5)
                     adb(commands["connect"] + phone_ip_address)
+                    reconnectAllPhones()
             elif(prompt == "3"):
                 reconnectAllPhones()
-                sendToAllPhones(commands["home"], 3)
+                sendToAllPhones(commands["home"], 1)
                 sendBrightnessCommandToAllPhones(commands["brightup"])
                 sendAwakenCommandToAllPhones()
             elif(prompt == "4"):
@@ -176,6 +217,8 @@ while(True):
             elif(prompt == "5"):
                 sendBrightnessCommandToAllPhones(commands["brightdown"])
                 sendAwakenCommandToAllPhones()
+            elif(prompt == "6"):
+                checkNewPhoneAgainstDictionary()
             elif(prompt == "0"):
                 exit(0)
             else:
