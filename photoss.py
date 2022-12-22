@@ -3,6 +3,7 @@ import sys
 import subprocess
 from subprocess import Popen
 from time import sleep
+import re
 
 #it is currently not known for why python 3 complains about the nmap library not existing if the program is run in picture taking mode.
 #WARNING: this if statement is a hack and a long-term solution needs to be researched.
@@ -56,7 +57,7 @@ phone_ip_addresses = {
                          ("20", "48:60:5F:2F:2B:5B", "unknown"):"192.168.1.122:5555",
                          ("21", "48:60:5F:2F:2B:5B", "unknown"):"192.168.1.142:5555",
                          ("22", "48:60:5F:2F:2B:5B", "unknown"):"192.168.1.119:5555",
-                         ("23", "48:60:5F:2F:2B:5B", "unknown"):"192.168.1.138:5555"
+                         ("23", "48:60:5F:2F:2B:5B", "unknown"):"192.168.1.118:5555"
                      }
 
 def checkNewPhoneAgainstDictionary():
@@ -100,6 +101,9 @@ commands = {
 
 def adb(command):
     subprocess.call(ADB_LOCATION + " " + command, shell=True)
+    
+def adbStandardOut(command):
+    return subprocess.check_output(ADB_LOCATION + " " + command, shell=True).decode(sys.stdout.encoding)
 
 def sendToAllPhones(command, delay):
     commands = []
@@ -112,6 +116,29 @@ def sendToAllPhones(command, delay):
     for p in procs:
         p.wait()
     sleep(delay)
+    
+def getPhoneNumberFromStdOut(stdOut):
+    temp_ip = ""
+    
+def reconnectAllPhonesStdOut():
+    for key, value in phone_ip_addresses.items():
+        adbStdOut = adbStandardOut("connect " + phone_ip_addresses[(key[0], key[1], key[2])])
+        if(adbStdOut[:6] == "failed"):
+            temp_ip = re.findall(r"'(.*?)'", adbStdOut, re.DOTALL)[0]
+            result = dict((new_val,new_k) for new_k,new_val in phone_ip_addresses.items()).get(temp_ip)[0]
+            prompt = input("Unit " + result + " is offline... Reconnect? (y/n)")
+            if(prompt == "y"):
+                adb(commands["connect"] + temp_ip)
+                if(input("Connection successful? (y/n) ") == "n"):
+                    adb(commands["disconnect"])
+                    adb(commands["kill"])
+                    input("You must have the desired phone attached via usb to continue. Press any key when ready.")
+                    sleep(1)
+                    adb(commands["usbmode"])
+                    sleep(1)
+                    adb(commands["tcpipreset"])
+                    sleep(5)
+                    adb(commands["connect"] + temp_ip)
 
 def reconnectAllPhones():
     for key, value in phone_ip_addresses.items():
@@ -132,6 +159,16 @@ def sendAwakenCommandToAllPhones():
     for key, value in phone_ip_addresses.items():
         phone_ip_address = phone_ip_addresses[(key[0], key[1], key[2])]
         commands.append("while true; do " + ADB_LOCATION + " -s " + phone_ip_address + " shell 'input keyevent KEYCODE_HOME && input keyevent 220 && input keyevent 221'; sleep 1; done")
+    procs = [ Popen(['/bin/bash', '-c', i]) for i in commands ]
+    for p in procs:
+        p.wait()
+        
+def sendHybernateCommandToAllPhones():
+    print("\n[YOUR PHONES ARE NOW IN HYBERNATION MODE] Press Ctrl + C to exit.\n")
+    commands = []
+    for key, value in phone_ip_addresses.items():
+        phone_ip_address = phone_ip_addresses[(key[0], key[1], key[2])]
+        commands.append("while true; do " + ADB_LOCATION + " -s " + phone_ip_address + " shell 'input keyevent KEYCODE_HOME && input keyevent 220'; done")
     procs = [ Popen(['/bin/bash', '-c', i]) for i in commands ]
     for p in procs:
         p.wait()
@@ -193,7 +230,6 @@ while(True):
                         phone_ip_address = phone_ip_addresses[(key[0], key[1], key[2])]
                     elif(phonemoniker == key[2]):
                         phone_ip_address = phone_ip_addresses[(key[0], key[1], key[2])]
-                print(phone_ip_address)
                 adb(commands["connect"] + phone_ip_address)
                 if(input("Connection successful? (y/n) ") == "n"):
                     adb(commands["disconnect"])
@@ -205,18 +241,24 @@ while(True):
                     adb(commands["tcpipreset"])
                     sleep(5)
                     adb(commands["connect"] + phone_ip_address)
-                    reconnectAllPhones()
             elif(prompt == "3"):
-                reconnectAllPhones()
-                sendToAllPhones(commands["home"], 1)
-                sendBrightnessCommandToAllPhones(commands["brightup"])
+                print("Make sure all phones are awake and not on their lockscreens.")
+                sleep(3)
+                #reconnectAllPhones()
+                reconnectAllPhonesStdOut()
+                #sendToAllPhones(commands["home"], 1)
                 sendAwakenCommandToAllPhones()
+                #print("hi")
+                #while(True):
+                    #sendBrightnessCommandToAllPhones(commands["brightup"])
+                    #sleep(1)
+                    #sendBrightnessCommandToAllPhones(commands["brightdown"])
+                #sendBrightnessCommandToAllPhones(commands["brightup"])
+                #sendAwakenCommandToAllPhones()
             elif(prompt == "4"):
-                sendBrightnessCommandToAllPhones(commands["brightup"])
                 sendAwakenCommandToAllPhones()
             elif(prompt == "5"):
-                sendBrightnessCommandToAllPhones(commands["brightdown"])
-                sendAwakenCommandToAllPhones()
+                sendHybernateCommandToAllPhones()
             elif(prompt == "6"):
                 checkNewPhoneAgainstDictionary()
             elif(prompt == "0"):
