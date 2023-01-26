@@ -132,7 +132,7 @@ def reconnectAllPhonesStdOut():
                 if(input("Connection successful? (y/n) ") == "n"):
                     adb(commands["disconnect"])
                     adb(commands["kill"])
-                    #input("You must have the desired phone attached via usb to continue. Press any key when ready.")
+                    input("You must have the desired phone attached via usb to continue. Press any key when ready.")
                     sleep(1)
                     adb(commands["usbmode"])
                     sleep(1)
@@ -234,7 +234,7 @@ while(True):
                 if(input("Connection successful? (y/n) ") == "n"):
                     adb(commands["disconnect"])
                     adb(commands["kill"])
-                    #input("You must have the desired phone attached via usb to continue. Press any key when ready.")
+                    input("You must have the desired phone attached via usb to continue. Press any key when ready.")
                     sleep(1)
                     adb(commands["usbmode"])
                     sleep(1)
