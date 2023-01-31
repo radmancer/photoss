@@ -8,6 +8,7 @@ The Termux API is needed in order to control each phones' hardware. (last known 
 As for setting up Termux and its API, follow these references:
 https://wiki.termux.com/wiki/Termux:API
 (It is important to source both .apks from F-Droid, otherwise functionality may break)
+In addition to installing the API, you must run the command "pkg install termux-api" in Termux.
 
 In addition to Termux and Rezzer.py, there is a special shell script called scp.sh that is responsible for uploading images
 back to the host computer. Make sure this shell script is chmod 777'd so that the Flask program can run it as a subprocess.
