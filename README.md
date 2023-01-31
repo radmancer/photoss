@@ -31,5 +31,5 @@ Next, run these commands in Termux:
 In addition to Termux and Rezzer.py, there is a special shell script called scp.sh that is responsible for uploading images
 back to the host computer. Make sure this shell script is chmod 777'd so that the Flask program can run it as a subprocess.
 
-As for setting up the Flask Server, special steps must be followed, see:
+The Flask Server should already be installed by running the commands above, but here is the original article that details how to setup Flask:
 https://opensource.com/article/20/8/python-android-mobile
