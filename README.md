@@ -14,6 +14,7 @@ You must also enable "Allow write system settings" for Termux:API
 Once this is all setup, run these test commands to turn down the brightness of the phone to 0 and back to 255:
 "termux-brightness 0"
 "termux-brightness 255"
+In order for Termux to read and write files in the Android file system, run this command: termux-setup-storage
 Next, run these commands in Termux:
 "pkg install root-repo"
 "pkg update"
