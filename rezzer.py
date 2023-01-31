@@ -1,160 +1,44 @@
-import sys
+from flask import Flask, request
 import subprocess
 from subprocess import Popen
-from time import sleep
+appFlask = Flask(__name__)
 
-ADB_LOCATION = "./adb"
-PHOTO_DIRECTORY = "/Users/scott/Documents/"
+@appFlask.route("/", methods = ['POST','GET'])
+def login():
+    if request.method == 'POST':
+        content = request.get_json(silent=False)
+        unit_number = content['unitName'] # Do your processing
+        subprocess.call("termux-camera-photo -c 0 " + unit_number + ".jpg", shell=True)
+        subprocess.call("./scp.sh")
+        return "Submitted!"
 
-phone_ip_addresses = [
-                        ["0","LMG710V41a9c9df"],
-                        ["1","LMG710V7fbd8155"],
-                        ["2","LMG710V86da3a0f"],
-                        ["3","LMG710V6e9a6bb9"],
-                        ["4","LMG710V307febb1"],
-                        ["5","LMG710Ve2e9bcd9"],
-                        ["6","LMG710Va67982ad"],
-                        ["7","LMG710V5d1751ea"],
-                        ["8","LMG710V8ef5f579"],
-                        ["9","LMG710V70cde984"],
-                        ["10","LMG710V769e1053"],
-                        ["11","LMG710V750d9b8e"],
-                        ["12","LMG710V6f6e8737"],
-                        ["13","LMG710V5f09db80"],
-                        ["14","LMG710V8df5fb04"],
-                        ["15","LMG710Vdc87a2df"],
-                        ["16","LMG710V5327ea38"],
-                        ["17","LMG710Vef4ab08b"],
-                        ["18","LMG710Ve504e7d0"],
-                        ["19","LMG710Vac529a8a"],
-                        ["20","LMG710Vdfc6f579"],
-                        ["21","LMG710V36923c69"],
-                        ["22","LMG710Vb785d370"],
-                        ["23","LMG710V2c62c29c"]
-                     ]
+    return '''
+<input type="button" value="UNIT 1" onclick="sendPost('1')" />
+<script>
+    var deviceIpAddresses = {};
+    deviceIpAddresses["1"] = "http://192.168.1.123:5000";
 
-def sendImageCaptureCommandToAllPhones():
-    commands = []
-    for i in range(len(phone_ip_addresses)):
-        phone_ip_address = phone_ip_addresses[i][1]
-        commands.append(ADB_LOCATION + " -s " + phone_ip_address + ' shell am start -a android.media.action.IMAGE_CAPTURE')
-    procs = [ Popen(['/bin/bash', '-c', i]) for i in commands ]
-    for p in procs:
-        p.wait()
-    sleep(3)
+    function sendPost(unitNumber){
+        let xhr = new XMLHttpRequest();
+        xhr.open("POST", deviceIpAddresses[unitNumber]);
+        xhr.setRequestHeader("Accept", "application/json");
+        xhr.setRequestHeader("Content-Type", "application/json");
+        
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === 4) {
+            console.log(xhr.status);
+            console.log(xhr.responseText);
+          }};
+        
+        var json_arr = {};
+        json_arr["unitName"] = unitNumber;
 
-def sendTakePhotoCommandToAllPhones():
-    commands = []
-    for i in range(len(phone_ip_addresses)):
-        phone_ip_address = phone_ip_addresses[i][1]
-        commands.append(ADB_LOCATION + " -s " + phone_ip_address + ' shell input keyevent 27')
-    procs = [ Popen(['/bin/bash', '-c', i]) for i in commands ]
-    for p in procs:
-        p.wait()
-    sleep(3)
-
-def sendImageDeleteCommandToAllPhones():
-    commands = []
-    for i in range(len(phone_ip_addresses)):
-        phone_ip_address = phone_ip_addresses[i][1]
-        commands.append(ADB_LOCATION + " -s " + phone_ip_address + " shell rm -r /sdcard/DCIM/Camera/*")
-    procs = [ Popen(['/bin/bash', '-c', i]) for i in commands ]
-    for p in procs:
-        p.wait()
-
-def sendImageRenameCommandToAllPhones():
-    commands = []
-    for i in range(len(phone_ip_addresses)):
-        phone_common_number = phone_ip_addresses[i][0]
-        phone_ip_address = phone_ip_addresses[i][1]
-        commands.append(ADB_LOCATION + " -s " + phone_ip_address + " shell mv /sdcard/DCIM/Camera/* /sdcard/DCIM/Camera/" + phone_common_number + "_" + phone_ip_address + ".jpg")
-    procs = [ Popen(['/bin/bash', '-c', i]) for i in commands ]
-    for p in procs:
-        p.wait()
-    sleep(1)
-
-def sendPullCommandToAllPhones():
-    commands = []
-    for i in range(len(phone_ip_addresses)):
-        phone_ip_address = phone_ip_addresses[i][1]
-        tempCommand = ADB_LOCATION + " -s " + phone_ip_address + " pull /sdcard/DCIM/Camera/" + phone_ip_addresses[i][0] + "_" + phone_ip_address + ".jpg " + PHOTO_DIRECTORY + phone_ip_addresses[i][0] + "_" + phone_ip_address + ".jpg "
-        print(tempCommand)
-        commands.append(tempCommand)
-    procs = [ Popen(['/bin/bash', '-c', i]) for i in commands ]
-    for p in procs:
-        p.wait()
-
-def pull():
-    #scp scott@192.168.1.238:/sdcard/DCIM/Camera/0.jpg /users/scott/documents
-    for i in range(len(phone_ip_addresses)):
-        phone_ip_address = phone_ip_addresses[i][1]
-        subprocess.Popen(ADB_LOCATION + " -s " + phone_ip_address + " shell scp scott@192.168.1.238:/sdcard/DCIM/Camera/" + phone_ip_addresses[i][0] + "_" + phone_ip_addresses[i][1] + ".jpg /users/scott/documents", shell=True)
-        sleep(3)
-
-def sendBrightnessToggle():
-    for j in range(2):
-        command = ""
-        if j == 0:
-            command = "shell input keyevent 220"
-        elif j == 1:
-            command = "shell input keyevent 221"
-        commands = []
-        for i in range(len(phone_ip_addresses)):
-            phone_common_number = phone_ip_addresses[i][0]
-            phone_ip_address = phone_ip_addresses[i][1]
-            commands.append(ADB_LOCATION + " -s " + phone_ip_address + " " + command)
-        procs = [ Popen(['/bin/bash', '-c', i]) for i in commands ]
-        for p in procs:
-            p.wait()
-
-def sendHybernationCommand():
-    for j in range(10):
-        commands = []
-        for i in range(len(phone_ip_addresses)):
-            phone_common_number = phone_ip_addresses[i][0]
-            phone_ip_address = phone_ip_addresses[i][1]
-            commands.append(ADB_LOCATION + " -s " + phone_ip_address + " shell input keyevent 220")
-        procs = [ Popen(['/bin/bash', '-c', i]) for i in commands ]
-        for p in procs:
-            p.wait()
-
-def sendAwakeningCommand():
-    for j in range(10):
-        commands = []
-        for i in range(len(phone_ip_addresses)):
-            phone_common_number = phone_ip_addresses[i][0]
-            phone_ip_address = phone_ip_addresses[i][1]
-            commands.append(ADB_LOCATION + " -s " + phone_ip_address + " shell input keyevent 221")
-        procs = [ Popen(['/bin/bash', '-c', i]) for i in commands ]
-        for p in procs:
-            p.wait()
-
-def sendHomeCommandToAllPhones():
-        commands = []
-        for i in range(len(phone_ip_addresses)):
-            phone_common_number = phone_ip_addresses[i][0]
-            phone_ip_address = phone_ip_addresses[i][1]
-            commands.append(ADB_LOCATION + " -s " + phone_ip_address + " shell input keyevent KEYCODE_HOME")
-        procs = [ Popen(['/bin/bash', '-c', i]) for i in commands ]
-        for p in procs:
-            p.wait()
-        sleep(3)
-
-if(len(sys.argv) > 1 and sys.argv[1] == "-c"):
-    while(True):
-        sendAwakeningCommand()
-        sendHybernationCommand()
-
-elif(len(sys.argv) > 1 and sys.argv[1] == "-p"):
-    while(True):
-        sendHybernationCommand()
-        sendBrightnessToggle()
-else:
-    #sendImageDeleteCommandToAllPhones()
-    #sendImageCaptureCommandToAllPhones()
-    #sendTakePhotoCommandToAllPhones()
-    #sendImageRenameCommandToAllPhones()
-    #sendHomeCommandToAllPhones()
-    sendPullCommandToAllPhones()
-    #pull()
-
+        var json_string = JSON.stringify(json_arr);
+        //let data = `{"unitNumber":""+unitNumber}`;
+        
+        xhr.send(json_string);
+    }
+</script>
+              '''
+if __name__ == "__main__":
+    appFlask.run(host="0.0.0.0",port=5000,debug=True)
