@@ -29,6 +29,7 @@ Next, run these commands in Termux:
 'export FLASK_DEBUG=""'
 "chmod 777 scp.sh"
 "pkg install sshpass"
+"pkg install openssh"
 "python rezzer.py"
 
 In addition to Termux and Rezzer.py, there is a special shell script called scp.sh that is responsible for uploading images
