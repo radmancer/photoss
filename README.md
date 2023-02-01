@@ -38,3 +38,6 @@ back to the host computer. Make sure this shell script is chmod 777'd so that th
 
 The Flask Server should already be installed by running the commands above, but here is the original article that details how to setup Flask:
 https://opensource.com/article/20/8/python-android-mobile
+
+PyAutoGUI library is necessary for automating the opening of each tab to communicate with each server/phone.
+For my 2020 Macbook Air, I must first run python3 [scriptname].py
