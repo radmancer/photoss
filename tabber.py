@@ -31,7 +31,10 @@ phone_ip_addresses = {
                          "23":"192.168.1.118:5000"
                      }
 
-subprocess.call("chromium-browser " + phone_ip_addresses["1"], shell=True)
-#screenWidth, screenHeight = pyautogui.size()
-#currentMouseX, currentMouseY = pyautogui.position()
-#pyautogui.moveTo(100, 150)
+print("You have 10 seconds to switch focus to a browser.")
+sleep(10)
+# Iterating over keys
+for key in phone_ip_addresses:
+    pyautogui.hotkey('command', 't')
+    pyautogui.write(phone_ip_addresses[key] + "/?unit=" + key)
+    pyautogui.press('enter')
