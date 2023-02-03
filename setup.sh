@@ -1,20 +1,27 @@
-pkg install termux-api
-termux-setup-storage
-read -p "Enable 'Allow write system settings' for Termux:API [Press any key to continue]"
-termux-setup-storage
-pkg install root-repo
+#connect phone to internet.
+#Install Termux and Termux-api APKs.
+#Run: termux-setup-storage
+#cp /sdcard/Download/setup.sh /data/data/com.termux/files/home
+#chmod 777 setup.sh
+#./setup.sh
 pkg update
+pkg install termux-api
+pkg install root-repo
 pkg install openssh
+pkg install sshpass
 mkdir Source
 cd Source
 cp /sdcard/Download/rezzer.py /data/data/com.termux/files/home/Source
 cp /sdcard/Download/scp.sh /data/data/com.termux/files/home/Source
+cp /sdcard/Download/python.sh /data/data/com.termux/files/home/Source
+chmod 777 python.sh
 chmod 777 scp.sh
 pkg install python
-pip install flask
-python -m venv venv
-. ./venv/bin/activate
-export FLASK_APP=rezzer.py
-export FLASK_DEBUG=""
-read -p "Setup complete, SSH into host machine once and press Ctrl+C [Press any key to continue]"
-read -p "run: 'python rezzer.py' to start the server. [Press any key to continue]"
+read -p "Run: pip install flask"
+read -p "Connect to local network. Log into host, run: ssh scott@192.168.1.136"
+read -p "Run: cd Source"
+read -p "Run: python -m venv venv"
+read -p "Run: . ./venv/bin/activate"
+read -p "Run: export FLASK_APP=rezzer.py"
+read -p 'Run: export FLASK_DEBUG=""'
+read -p "Run: python rezzer.py"
