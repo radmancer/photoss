@@ -18,6 +18,7 @@ chmod 777 python.sh
 chmod 777 scp.sh
 pkg install python
 read -p "Run: pip install flask"
+read -p "Run: pip install schedule"
 read -p "Connect to local network. Log into host, run: ssh scott@192.168.1.136"
 read -p "Run: cd Source"
 read -p "Run: python -m venv venv"
