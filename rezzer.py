@@ -5,20 +5,19 @@ import schedule
 import time
 appFlask = Flask(__name__)
 
-unit = ""
-
-def take_photo():
+def take_photo(unit):
     subprocess.call("termux-camera-photo -c 0 " + unit + ".jpg", shell=True)
     subprocess.call("./scp.sh")
+    print("[PHOTO TAKEN]\n")
 
 @appFlask.route("/", methods=["GET", "POST"])
 def main():
     if(request.method == "GET"):
         unit = request.args.get('unit')
         timestamp = request.args.get('time')
-        print(timestamp)
+        print("[Picture will be taken at: " + timestamp + "]\n")
 
-        schedule.every().day.at(timestamp).do(take_photo)
+        schedule.every().day.at(timestamp).do(take_photo, unit)
 
         while True:
             schedule.run_pending()
@@ -29,15 +28,13 @@ def main():
         unitNumber = unit.split(";")
         unit = unitNumber[0]
         timestamp = unitNumber[1]
-        print(timestamp)
+        print("[Picture will be taken at: " + timestamp + "]\n")
 
-        schedule.every().day.at(timestamp).do(take_photo)
+        schedule.every().day.at(timestamp).do(take_photo, unit)
 
         while True:
             schedule.run_pending()
             time.sleep(1)
-
-    return "[PHOTO TAKEN]"
 
 if __name__ == "__main__":
     appFlask.run(host="0.0.0.0",port=5000,debug=True)
