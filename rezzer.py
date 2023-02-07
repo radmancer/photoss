@@ -13,6 +13,17 @@ def take_photo():
 
 @appFlask.route("/", methods=["GET", "POST"])
 def main():
+    if(request.method == "GET"):
+        unit = request.args.get('unit')
+        timestamp = request.args.get('time')
+        print(timestamp)
+
+        schedule.every().day.at(timestamp).do(take_photo)
+
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
+
     if(request.method == "POST"):
         unit = request.form.get('unit')
         unitNumber = unit.split(";")

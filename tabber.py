@@ -30,11 +30,11 @@ phone_ip_addresses = {
                          "22":"192.168.1.119:5000",
                          "23":"192.168.1.118:5000"
                      }
-
+timestamp = input("Enter Photo Time (hh:mm): ")
 print("You have 10 seconds to switch focus to a browser.")
 sleep(10)
 # Iterating over keys
 for key in phone_ip_addresses:
     pyautogui.hotkey('command', 't')
-    pyautogui.write(phone_ip_addresses[key] + "/?unit=" + key)
+    pyautogui.write(phone_ip_addresses[key] + "/?unit=" + key + "&time=" + timestamp)
     pyautogui.press('enter')
