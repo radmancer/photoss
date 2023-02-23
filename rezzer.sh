@@ -30,10 +30,12 @@ declare -a ip_addresses=(
 )
 
 declare -a ip_addresses=(
-	"192.168.1.118 u0_a235 13"
 	"192.168.1.113 u0_a237 6"
+	"192.168.1.118 u0_a235 13"
 	"192.168.1.122 u0_a234 20"
+	"192.168.1.121 u0_a234 24"
 	"192.168.1.142 u0_a235 25"
+	"192.168.1.139 u0_a234 26"
 )
 
 # Define a function to run an ssh command on an Android phone
