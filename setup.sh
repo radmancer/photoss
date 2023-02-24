@@ -6,7 +6,7 @@
 #cp /sdcard/Download/setup.sh /data/data/com.termux/files/home
 #chmod 777 setup.sh
 #./setup.sh (run this script)
-pkg update
+yes | pkg update
 pkg install termux-api
 termux-camera-photo -c 0 test.jpg & rm test.jpg
 pkg install termux-auth
@@ -16,8 +16,15 @@ whoami
 passwd
 #enter 'xgp15a2'
 sshd
-#ifconfig
-#from the host computer: run:
+#pkg install termux-services
+#!!!!Now connect back to zoob network
+# -Still manually entering commands
+# ifconfig
+# -Find the ipaddress
+# whoami
+# -Find the username
+# echo {unitnumber} > unit.id
+# -from the host computer: run:
 #ssh -p 8022 [username]@[ipaddress]
 #exit from phone terminal: exit
 #To place your public key on a new phone.
